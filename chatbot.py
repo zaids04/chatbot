@@ -1,51 +1,58 @@
 from flask import Flask, render_template, request, jsonify
-import os
-import re
-import pyodbc
+import os, re
+import psycopg2
+import psycopg2.extras
 import google.generativeai as genai
 from datetime import datetime
 
-# ============================================================
-#  SQL SERVER CONNECTION (Render + Azure SQL ready)
-# ============================================================
+# ===================== Postgres connection (Railway) =====================
+DATABASE_URL = os.getenv("DATABASE_URL")  # e.g. postgres://user:pass@host:port/dbname
+if not DATABASE_URL:
+    raise SystemExit("Missing DATABASE_URL environment variable.")
 
-DB_SERVER   = os.getenv("DB_SERVER")      # e.g. myserver.database.windows.net
-DB_DATABASE = os.getenv("TestDB")    # e.g. TestDB
-DB_USERNAME = os.getenv("DB_USERNAME")    # e.g. wastebot_user@myserver
-DB_PASSWORD = os.getenv("DB_PASSWORD")    # your SQL password
+# sslmode=require is common on Railway; if DATABASE_URL already has it, fine.
+conn = psycopg2.connect(DATABASE_URL, sslmode=os.getenv("PG_SSLMODE", "require"))
+conn.autocommit = True
+cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-conn_str = (
-    "Driver={ODBC Driver 18 for SQL Server};"
-    f"Server=tcp:{DB_SERVER},1433;"
-    f"Database={DB_DATABASE};"
-    f"Uid={DB_USERNAME};"
-    f"Pwd={DB_PASSWORD};"
-    "Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"
-)
+# Create table + seed once (idempotent)
+def ensure_table():
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS public.wastedata (
+            city            TEXT NOT NULL,
+            year            INT  NOT NULL,
+            wastecollected  INT  NOT NULL,
+            recycledwaste   INT  NOT NULL
+        );
+    """)
+    # Seed a few rows if empty
+    cursor.execute("SELECT COUNT(*) AS n FROM public.wastedata;")
+    n = cursor.fetchone()["n"]
+    if n == 0:
+        cursor.execute("""
+            INSERT INTO public.wastedata (city, year, wastecollected, recycledwaste) VALUES
+            ('Amman', 2023, 12000, 3200),
+            ('Amman', 2024, 13500, 4100),
+            ('Zarqa', 2023,  6800, 1500),
+            ('Zarqa', 2024,  7200, 1700),
+            ('Irbid', 2023,  5400, 1100),
+            ('Irbid', 2024,  5900, 1300);
+        """)
+ensure_table()
 
-conn = pyodbc.connect(conn_str, autocommit=True)
-cursor = conn.cursor()
-
-# ============================================================
-#  GEMINI CONFIG (from environment variables)
-# ============================================================
-
+# ===================== Gemini config =====================
 GEMINI_API_KEY = os.getenv("AIzaSyD60_pRh-tHnvSii1SSvG0DKDAe7r0dW0k")
-GEMINI_MODEL   = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+if not GEMINI_API_KEY:
+    raise SystemExit("Missing GEMINI_API_KEY environment variable.")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 genai.configure(api_key="AIzaSyD60_pRh-tHnvSii1SSvG0DKDAe7r0dW0k")
 model = genai.GenerativeModel("gemini-2.5-flash")
 
-# ============================================================
-#  FLASK APP
-# ============================================================
-
+# ===================== Flask =====================
 app = Flask(__name__)
 
-# ============================================================
-#  HELPERS
-# ============================================================
-
+# ===================== Helpers =====================
 FENCE_RE = re.compile(r"^```(?:sql)?\s*|\s*```$", re.IGNORECASE | re.MULTILINE)
 BAD_SQL = re.compile(
     r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|MERGE|EXEC|GRANT|REVOKE|BEGIN|COMMIT|ROLLBACK)\b",
@@ -60,21 +67,22 @@ def extract_text(resp) -> str:
     return (txt or "").strip()
 
 def sanitize_sql(sql: str) -> str:
+    """
+    Postgres-safe:
+      - must start with SELECT
+      - strip code fences
+      - append LIMIT 100 if none present (and not already limited)
+    """
     s = FENCE_RE.sub("", sql).strip().rstrip(";")
     if BAD_SQL.search(s) or not s.upper().startswith("SELECT"):
         raise ValueError("Unsafe or non-SELECT SQL proposed by the model.")
-    if re.match(r"^SELECT\s+TOP\s+\d+", s, re.IGNORECASE) or \
-       re.match(r"^SELECT\s+DISTINCT\s+TOP\s+\d+", s, re.IGNORECASE):
+
+    # If the query already has LIMIT, leave it; otherwise add LIMIT 100
+    if re.search(r"\bLIMIT\s+\d+\b", s, re.IGNORECASE):
         return s
-    s = re.sub(r"^SELECT\s+DISTINCT\s+", "SELECT DISTINCT TOP 100 ", s, flags=re.IGNORECASE)
-    if s.upper().startswith("SELECT ") and " TOP " not in s[:40].upper():
-        s = s.replace("SELECT ", "SELECT TOP 100 ", 1)
-    return s
+    return s + " LIMIT 100"
 
-# ============================================================
-#  ROUTES
-# ============================================================
-
+# ===================== Routes =====================
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -87,12 +95,13 @@ def chat():
             return jsonify({"ok": False, "message": "Please type a question.", "sql": None})
 
         prompt = f"""
-You are a SQL Server expert. The ONLY table is dbo.WasteData with columns:
-City NVARCHAR(100), Year INT, WasteCollected INT, RecycledWaste INT.
+You are a PostgreSQL expert. The ONLY table is public.wastedata with columns:
+city TEXT, year INT, wastecollected INT, recycledwaste INT.
 
 Rules:
-- Write ONE valid T-SQL SELECT statement ONLY against dbo.WasteData.
-- Qualify the table name as dbo.WasteData.
+- Write ONE valid SQL SELECT statement ONLY against public.wastedata.
+- Qualify the table name as public.wastedata.
+- Use PostgreSQL syntax (e.g., LIMIT, ILIKE).
 - Do not add explanations, comments, or code fences.
 - Never write DDL or DML.
 - If the request cannot be answered from these columns, return exactly:
@@ -109,10 +118,12 @@ User: {user_prompt}
             return jsonify({"ok": False, "message": "Gemini could not generate a valid query.", "sql": sql_query, "ts": datetime.utcnow().isoformat()})
 
         sql_query = sanitize_sql(sql_query)
+
+        # Execute
         cursor.execute(sql_query)
         rows = cursor.fetchall()
-        cols = [c[0] for c in cursor.description]
-        results = [dict(zip(cols, row)) for row in rows]
+        cols = [desc.name for desc in cursor.description]
+        results = [dict(r) for r in rows]
 
         return jsonify({
             "ok": True,
@@ -130,11 +141,6 @@ User: {user_prompt}
             "sql": None,
             "ts": datetime.utcnow().isoformat()
         }), 400
-
-
-# ============================================================
-#  ENTRY POINT
-# ============================================================
 
 if __name__ == "__main__":
     print("✅ Flask server running on http://127.0.0.1:5000")
