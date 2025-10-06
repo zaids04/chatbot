@@ -6,50 +6,51 @@ import google.generativeai as genai
 from datetime import datetime
 
 # ===================== Postgres connection (Railway) =====================
-DATABASE_URL = os.getenv("DATABASE_URL")  # e.g. postgres://user:pass@host:port/dbname
+DATABASE_URL = os.getenv("DATABASE_URL")  # Must be set in Railway Variables
 if not DATABASE_URL:
     raise SystemExit("Missing DATABASE_URL environment variable.")
 
-# sslmode=require is common on Railway; if DATABASE_URL already has it, fine.
 conn = psycopg2.connect(DATABASE_URL, sslmode=os.getenv("PG_SSLMODE", "require"))
 conn.autocommit = True
 cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 # Create table + seed once (idempotent)
 def ensure_table():
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS public.wastedata (
-            city            TEXT NOT NULL,
-            year            INT  NOT NULL,
-            wastecollected  INT  NOT NULL,
-            recycledwaste   INT  NOT NULL
-        );
-    """)
-    # Seed a few rows if empty
-    cursor.execute("SELECT COUNT(*) AS n FROM public.wastedata;")
-    n = cursor.fetchone()["n"]
-    if n == 0:
+    try:
         cursor.execute("""
-            INSERT INTO public.wastedata (city, year, wastecollected, recycledwaste) VALUES
-            ('Amman', 2023, 12000, 3200),
-            ('Amman', 2024, 13500, 4100),
-            ('Zarqa', 2023,  6800, 1500),
-            ('Zarqa', 2024,  7200, 1700),
-            ('Irbid', 2023,  5400, 1100),
-            ('Irbid', 2024,  5900, 1300);
+            CREATE TABLE IF NOT EXISTS public.wastedata (
+                city            TEXT NOT NULL,
+                year            INT  NOT NULL,
+                wastecollected  INT  NOT NULL,
+                recycledwaste   INT  NOT NULL
+            );
         """)
-if __name__ == "__main__":
-    ensure_table()
+        cursor.execute("SELECT COUNT(*) AS n FROM public.wastedata;")
+        n = cursor.fetchone()["n"]
+        if n == 0:
+            cursor.execute("""
+                INSERT INTO public.wastedata (city, year, wastecollected, recycledwaste) VALUES
+                ('Amman', 2023, 12000, 3200),
+                ('Amman', 2024, 13500, 4100),
+                ('Zarqa', 2023,  6800, 1500),
+                ('Zarqa', 2024,  7200, 1700),
+                ('Irbid', 2023,  5400, 1100),
+                ('Irbid', 2024,  5900, 1300);
+            """)
+    except Exception as e:
+        print("❌ Table init error:", e)
 
+ensure_table()
 
 # ===================== Gemini config =====================
-GEMINI_API_KEY = os.getenv("AIzaSyD60_pRh-tHnvSii1SSvG0DKDAe7r0dW0k")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise SystemExit("Missing GEMINI_API_KEY environment variable.")
+
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
-genai.configure(api_key="AIzaSyD60_pRh-tHnvSii1SSvG0DKDAe7r0dW0k")
-model = genai.GenerativeModel("gemini-2.5-flash")
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel(GEMINI_MODEL)
 
 # ===================== Flask =====================
 app = Flask(__name__)
@@ -69,17 +70,9 @@ def extract_text(resp) -> str:
     return (txt or "").strip()
 
 def sanitize_sql(sql: str) -> str:
-    """
-    Postgres-safe:
-      - must start with SELECT
-      - strip code fences
-      - append LIMIT 100 if none present (and not already limited)
-    """
     s = FENCE_RE.sub("", sql).strip().rstrip(";")
     if BAD_SQL.search(s) or not s.upper().startswith("SELECT"):
         raise ValueError("Unsafe or non-SELECT SQL proposed by the model.")
-
-    # If the query already has LIMIT, leave it; otherwise add LIMIT 100
     if re.search(r"\bLIMIT\s+\d+\b", s, re.IGNORECASE):
         return s
     return s + " LIMIT 100"
@@ -108,6 +101,7 @@ Rules:
 - Never write DDL or DML.
 - If the request cannot be answered from these columns, return exactly:
 SELECT 'CANNOT_ANSWER' AS msg;
+
 User: {user_prompt}
 """.strip()
 
@@ -120,8 +114,6 @@ User: {user_prompt}
             return jsonify({"ok": False, "message": "Gemini could not generate a valid query.", "sql": sql_query, "ts": datetime.utcnow().isoformat()})
 
         sql_query = sanitize_sql(sql_query)
-
-        # Execute
         cursor.execute(sql_query)
         rows = cursor.fetchall()
         cols = [desc.name for desc in cursor.description]
@@ -145,4 +137,4 @@ User: {user_prompt}
         }), 400
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    app.run(host="0.0.0.0", port=8080)
