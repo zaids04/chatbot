@@ -38,7 +38,9 @@ def ensure_table():
             ('Irbid', 2023,  5400, 1100),
             ('Irbid', 2024,  5900, 1300);
         """)
-ensure_table()
+if __name__ == "__main__":
+    ensure_table()
+
 
 # ===================== Gemini config =====================
 GEMINI_API_KEY = os.getenv("AIzaSyD60_pRh-tHnvSii1SSvG0DKDAe7r0dW0k")
