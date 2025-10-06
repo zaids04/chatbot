@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Waste Management Chatbot</title>
+  <style>
+    :root {
+      --primary-color: #6366f1;
+      --primary-hover: #4f46e5;
+      --secondary-color: #64748b;
+      --success-color: #10b981;
+      --danger-color: #ef4444;
+      --warning-color: #f59e0b;
+      --background-color: #f8fafc;
+      --surface-color: #ffffff;
+      --surface-secondary: #f1f5f9;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --border-color: #e2e8f0;
+      --border-light: #f1f5f9;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+      background: var(--background-color); 
+      margin: 0; 
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    header { 
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%); 
+      color: white; 
+      padding: 24px 16px; 
+      text-align: center; 
+      box-shadow: var(--shadow-md);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    main { 
+      display: flex; 
+      gap: 24px; 
+      max-width: 1200px; 
+      margin: 32px auto; 
+      padding: 0 16px; 
+    }
+
+    .pane { 
+      flex: 1 1 auto; 
+      background: var(--surface-color); 
+      padding: 24px; 
+      border-radius: var(--radius-lg); 
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+    }
+
+    #log { 
+      border: 1px solid var(--border-color); 
+      height: 280px; 
+      overflow: auto; 
+      padding: 16px; 
+      border-radius: var(--radius-md); 
+      background: var(--surface-secondary); 
+      margin: 16px 0;
+    }
+
+    .msg { 
+      margin: 8px 0; 
+      padding: 8px 0;
+    }
+
+    .user { 
+      color: var(--primary-color); 
+      font-weight: 600; 
+    }
+
+    .bot { 
+      color: var(--success-color); 
+      font-weight: 600; 
+    }
+
+    .row { 
+      display: flex; 
+      gap: 12px; 
+      margin-top: 16px; 
+    }
+
+    input[type="text"] { 
+      flex: 1; 
+      padding: 12px 16px; 
+      border: 1px solid var(--border-color); 
+      border-radius: var(--radius-md); 
+      font-size: 14px;
+      transition: all 0.2s ease;
+      background: var(--surface-color);
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgb(99 102 241 / 0.1);
+    }
+
+    button { 
+      padding: 12px 20px; 
+      border: none; 
+      border-radius: var(--radius-md); 
+      background: var(--primary-color); 
+      color: white; 
+      cursor: pointer; 
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    button:hover { 
+      background: var(--primary-hover); 
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: 16px; 
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    th, td { 
+      border: 1px solid var(--border-color); 
+      padding: 12px; 
+      text-align: left; 
+    }
+
+    th { 
+      background: var(--surface-secondary); 
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .sql { 
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; 
+      background: var(--surface-secondary); 
+      padding: 16px; 
+      border-radius: var(--radius-md); 
+      margin-top: 16px; 
+      border: 1px solid var(--border-color);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .error { 
+      color: var(--danger-color); 
+      font-weight: 600; 
+    }
+
+    .prompts { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 8px; 
+      margin: 16px 0 8px; 
+    }
+
+    .chip { 
+      background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); 
+      border: 1px solid #a5b4fc; 
+      color: var(--primary-color); 
+      padding: 8px 16px; 
+      border-radius: 999px; 
+      cursor: pointer; 
+      user-select: none; 
+      transition: all 0.2s ease; 
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .chip:hover { 
+      transform: translateY(-2px); 
+      box-shadow: var(--shadow-md);
+      background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 100%);
+    }
+
+    .hint { 
+      color: var(--text-muted); 
+      font-size: 13px; 
+      margin-top: 8px; 
+    }
+
+    aside { 
+      width: 360px; 
+      background: var(--surface-color); 
+      padding: 24px; 
+      border-radius: var(--radius-lg); 
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-light);
+      height: fit-content;
+    }
+
+    aside h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .hitem { 
+      border: 1px solid var(--border-color); 
+      border-radius: var(--radius-md); 
+      padding: 16px; 
+      margin-bottom: 12px; 
+      background: var(--surface-color); 
+      transition: all 0.2s ease;
+    }
+
+    .hitem:hover {
+      border-color: var(--primary-color);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .hmeta { 
+      font-size: 12px; 
+      color: var(--text-muted); 
+      margin-bottom: 8px; 
+      display: flex; 
+      justify-content: space-between; 
+      gap: 8px; 
+    }
+
+    .hsql { 
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; 
+      font-size: 12px; 
+      background: var(--surface-secondary); 
+      padding: 8px; 
+      border-radius: var(--radius-sm); 
+      overflow: auto; 
+      max-height: 80px; 
+      border: 1px solid var(--border-light);
+    }
+
+    .hbtns { 
+      display: flex; 
+      gap: 8px; 
+      margin-top: 12px; 
+    }
+
+    .btn-secondary { 
+      background: var(--secondary-color); 
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .btn-danger { 
+      background: var(--danger-color); 
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .muted { 
+      color: var(--text-muted); 
+      font-size: 12px; 
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--surface-secondary);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      main {
+        flex-direction: column;
+        gap: 16px;
+        margin: 16px auto;
+        padding: 0 12px;
+      }
+      
+      aside {
+        width: 100%;
+      }
+      
+      header h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🗑️ Waste Management Chatbot</h1>
+  </header>
+
+  <main>
+    <!-- Chat pane -->
+    <section class="pane">
+      <div>
+        <div style="font-weight:600; margin-bottom:6px;">Quick prompts</div>
+        <div class="prompts" id="prompts"></div>
+        <div class="hint">Click a chip to auto-run that query. You can still type your own below.</div>
+      </div>
+
+      <div id="log" aria-live="polite"></div>
+
+      <div class="row">
+        <input id="msg" type="text" placeholder="Ask about dbo.WasteData (e.g., 'show all rows', 'total WasteCollected per city')" />
+        <button id="sendBtn" onclick="send()">Send</button>
+      </div>
+
+      <div id="result"></div>
+    </section>
+
+    <!-- History pane -->
+    <aside>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0;">History</h3>
+        <button class="btn-danger" onclick="clearHistory()">Clear</button>
+      </div>
+      <div id="historyList" style="margin-top:10px;"></div>
+      <div class="muted">Saved locally in your browser. Persists across refresh.</div>
+    </aside>
+  </main>
+
+  <script>
+    const log = document.getElementById('log');
+    const result = document.getElementById('result');
+    const input = document.getElementById('msg');
+    const promptsEl = document.getElementById('prompts');
+    const historyList = document.getElementById('historyList');
+
+    // ----- Quick prompts -----
+    const QUICK_PROMPTS = [
+      "show all rows",
+      "show top 10 rows",
+      "count all rows",
+      "average WasteCollected overall",
+      "average WasteCollected per city",
+      "total WasteCollected per city",
+      "total RecycledWaste per city",
+      "rows for Year = 2024",
+      "top 5 cities by RecycledWaste in 2024",
+      "which city recycled the most in 2024",
+      "year-over-year WasteCollected per city",
+      "recycling rate (RecycledWaste / WasteCollected) per city",
+    ];
+    QUICK_PROMPTS.forEach(text => {
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.textContent = text;
+      chip.title = text;
+      chip.onclick = () => { input.value = text; send(); };
+      promptsEl.appendChild(chip);
+    });
+
+    // ----- Chat helpers -----
+    function appendUser(text) {
+      log.innerHTML += `<div class="msg"><span class="user">You:</span> ${escapeHtml(text)}</div>`;
+      log.scrollTop = log.scrollHeight;
+    }
+    function appendBot(text) {
+      log.innerHTML += `<div class="msg"><span class="bot">Bot:</span> ${text}</div>`;
+      log.scrollTop = log.scrollHeight;
+    }
+    function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    async function send() {
+      const message = input.value.trim();
+      if (!message) return;
+      input.value = "";
+      appendUser(message);
+      result.innerHTML = "";
+
+      try {
+        const res = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+
+        if (!data.ok) {
+          appendBot(`<span class="error">${escapeHtml(data.message || "Error")}</span>`);
+          if (data.sql) result.innerHTML = `<div class="sql"><b>SQL:</b> ${escapeHtml(data.sql)}</div>`;
+          saveHistory({ ok:false, user: message, ts: data.ts || new Date().toISOString(), sql: data.sql || "", rows: [], columns: [] , message: data.message || "Error"});
+          renderHistory();
+          return;
+        }
+
+        appendBot("Query executed successfully.");
+        result.innerHTML = `<div class="sql"><b>SQL:</b> ${escapeHtml(data.sql)}</div>`;
+
+        if (data.rows && data.rows.length) {
+          const cols = data.columns || Object.keys(data.rows[0]);
+          let thead = "<tr>" + cols.map(c => `<th>${escapeHtml(c)}</th>`).join("") + "</tr>";
+          let tbody = data.rows.map(r =>
+            "<tr>" + cols.map(c => `<td>${escapeHtml(String(r[c] ?? ""))}</td>`).join("") + "</tr>"
+          ).join("");
+          result.innerHTML += `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
+        } else {
+          result.innerHTML += `<div>No rows</div>`;
+        }
+
+        saveHistory({
+          ok: true,
+          user: message,
+          ts: data.ts || new Date().toISOString(),
+          sql: data.sql,
+          rows: data.rows || [],
+          columns: data.columns || []
+        });
+        renderHistory();
+
+      } catch (e) {
+        appendBot(`<span class="error">Failed to contact server.</span>`);
+        console.error(e);
+      }
+    }
+
+    // ----- History (localStorage) -----
+    const KEY = "wastechat_history_v1";
+
+    function loadHistory() {
+      try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+      catch { return []; }
+    }
+    function saveHistoryEntryList(list) {
+      localStorage.setItem(KEY, JSON.stringify(list));
+    }
+    function saveHistory(entry) {
+      const list = loadHistory();
+      list.unshift(entry);
+      saveHistoryEntryList(list.slice(0, 100));
+    }
+    function clearHistory() {
+      localStorage.removeItem(KEY);
+      renderHistory();
+    }
+
+    // expose helpers that use index (so inline onclick works)
+    function rerunIdx(i) { const entry = (window.wasteHist || [])[i]; if (entry) { input.value = entry.user; send(); } }
+    function previewIdx(i) { const entry = (window.wasteHist || [])[i]; if (entry) preview(entry); }
+
+    function preview(entry) {
+      result.innerHTML = `<div class="sql"><b>SQL (from history):</b> ${escapeHtml(entry.sql || "(none)")}</div>`;
+      if (entry.ok && entry.rows && entry.rows.length) {
+        const cols = entry.columns && entry.columns.length ? entry.columns : Object.keys(entry.rows[0]);
+        const rows = entry.rows.slice(0, 10);
+        let thead = "<tr>" + cols.map(c => `<th>${escapeHtml(c)}</th>`).join("") + "</tr>";
+        let tbody = rows.map(r =>
+          "<tr>" + cols.map(c => `<td>${escapeHtml(String(r[c] ?? ""))}</td>`).join("") + "</tr>"
+        ).join("");
+        result.innerHTML += `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
+      } else if (!entry.ok) {
+        result.innerHTML += `<div class="error">${escapeHtml(entry.message || "Previous request failed")}</div>`;
+      } else {
+        result.innerHTML += `<div>No rows</div>`;
+      }
+      appendBot("Loaded a previous answer from history.");
+    }
+
+    function renderHistory() {
+      const list = loadHistory();
+      historyList.innerHTML = "";
+      if (!list.length) {
+        historyList.innerHTML = `<div class="muted">No history yet.</div>`;
+        window.wasteHist = [];
+        return;
+      }
+      // Save on a safe global (do NOT overwrite window.history)
+      window.wasteHist = list;
+
+      list.forEach((h, idx) => {
+        const stamp = new Date(h.ts || Date.now()).toLocaleString();
+        const title = h.user.length > 60 ? h.user.slice(0, 60) + "…" : h.user;
+        const safeSQL = h.sql ? h.sql.replace(/\s+/g, " ").trim() : "";
+        const safeSQLShort = safeSQL.length > 80 ? safeSQL.slice(0, 80) + "…" : safeSQL;
+
+        const div = document.createElement("div");
+        div.className = "hitem";
+        div.innerHTML = `
+          <div class="hmeta">
+            <div>${escapeHtml(stamp)}</div>
+            <div>${h.ok ? "✅" : "❌"}</div>
+          </div>
+          <div><strong>${escapeHtml(title)}</strong></div>
+          <div class="hsql">${escapeHtml(safeSQLShort || "(no SQL)")}</div>
+          <div class="hbtns">
+            <button class="btn-secondary" onclick="previewIdx(${idx})">Preview</button>
+            <button onclick="rerunIdx(${idx})">Re-run</button>
+          </div>
+        `;
+        historyList.appendChild(div);
+      });
+    }
+
+    // Enter key support
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
+
+    // Init
+    renderHistory();
+  </script>
+</body>
+</html>
