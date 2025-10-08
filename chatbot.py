@@ -350,7 +350,7 @@ def chat():
 # Entrypoint (Railway uses PORT; bind 0.0.0.0)
 # =========================================================
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", "5000"))
+    port = int(os.getenv("PORT", "8080"))
     host = "0.0.0.0"
     print(f"✅ Server listening on http://{host}:{port} (DB={DB_KIND})")
     app.run(host=host, port=port, debug=bool(os.getenv("FLASK_DEBUG", "0") == "1"))
