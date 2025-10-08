@@ -19,14 +19,8 @@ from dotenv import load_dotenv
 # =========================================================
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("AIzaSyD60_pRh-tHnvSii1SSvG0DKDAe7r0dW0k") or os.getenv("AIzaSyD60_pRh-tHnvSii1SSvG0DKDAe7r0dW0k")
-if not GEMINI_API_KEY:
-    raise SystemExit("Missing GEMINI_API_KEY environment variable.")
 genai.configure(api_key="AIzaSyD60_pRh-tHnvSii1SSvG0DKDAe7r0dW0k")
-
-MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-model = genai.GenerativeModel(MODEL_NAME)
-
+model = genai.GenerativeModel("gemini-2.5-flash")
 # =========================================================
 # Flask
 # =========================================================
