@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify, session
 import os, re, json, sqlite3
 from datetime import datetime
+from decimal import Decimal
+from datetime import date, datetime
 
 # Try Postgres when DATABASE_URL is set (Railway), else use SQLite locally
 PG_AVAILABLE = True
@@ -21,6 +23,7 @@ load_dotenv()
 
 genai.configure(api_key="AIzaSyD60_pRh-tHnvSii1SSvG0DKDAe7r0dW0k")
 model = genai.GenerativeModel("gemini-2.5-flash")
+
 # =========================================================
 # Flask
 # =========================================================
@@ -184,6 +187,20 @@ def make_text_filters_nocase(sql: str) -> str:
         s = re.sub(r"(?is)\bcity\s+in\s*\(\s*(.*?)\s*\)", _lower_in, s)
     return s
 
+# ---------- NEW: convert DB values to JSON-safe native types ----------
+def to_native(v):
+    if isinstance(v, Decimal):
+        return float(v)
+    if isinstance(v, (date, datetime)):
+        return v.isoformat()
+    if isinstance(v, memoryview):
+        try:
+            return bytes(v).decode("utf-8", "ignore")
+        except Exception:
+            return bytes(v)
+    return v
+# ---------------------------------------------------------------------
+
 def classify(user_prompt: str) -> dict:
     """
     Decide whether we need DB data; if yes, propose a single SELECT.
@@ -300,17 +317,27 @@ def chat():
             sql_query = sanitize_sql(sql_query)
             sql_query = make_text_filters_nocase(sql_query)
 
-            # Execute
+            # Execute and convert to JSON-safe rows
             if DB_KIND == "postgres":
                 cur.execute(sql_query)
                 fetched = cur.fetchall()
                 cols = [d.name for d in cur.description]
-                rows = [dict(r) for r in fetched]
+                rows = []
+                for rec in fetched:
+                    obj = {}
+                    for col in cols:
+                        obj[col] = to_native(rec[col])
+                    rows.append(obj)
             else:
                 cur.execute(sql_query)
                 fetched = cur.fetchall()
                 cols = [d[0] for d in cur.description]
-                rows = [dict(zip(cols, r)) for r in fetched]
+                rows = []
+                for r in fetched:
+                    obj = {}
+                    for i, col in enumerate(cols):
+                        obj[col] = to_native(r[i])
+                    rows.append(obj)
 
             # Save last result for follow-ups
             save_last(rows, cols, sql_query)
