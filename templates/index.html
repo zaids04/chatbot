@@ -161,21 +161,6 @@
       padding: 0 20px;
     }
 
-    /* Quick prompts */
-    .suggestions-inline { display:flex; justify-content:flex-end; margin: 12px 0; }
-    .prompts{ display:flex; flex-wrap:wrap; gap:8px; margin:0; padding: 0; max-width: 60%; justify-content:flex-end; }
-    .chip{
-      background: #111827;
-      border: 1px solid rgba(255,255,255,.10);
-      color: #e5e7eb;
-      padding: 8px 12px; border-radius: 999px; cursor: pointer; user-select:none;
-      transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
-      font-size:13px; font-weight:500;
-      opacity: 0; transform: scale(.9);
-    }
-    .chip-show { opacity: 1; transform: scale(1); }
-    .chip:hover{ transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.35); }
-    .hint{ color: var(--text-muted); font-size:13px; margin: 4px 0 8px; text-align:right; }
 
     /* Message bubbles */
     #log { border: none; height: auto; overflow: visible; padding: 0; background: transparent; margin: 0; }
@@ -261,10 +246,6 @@
           <div class="main-title">Waste Management Chatbot</div>
           <div class="main-subtitle">Ask about the Waste Database</div>
 
-          <!-- Quick prompts row (optional) -->
-          <div class="suggestions-inline">
-            <div id="prompts" class="prompts"></div>
-          </div>
 
           <div id="log" aria-live="polite"></div>
           <div id="result"></div>
@@ -286,38 +267,8 @@
     const log = document.getElementById('log');
     const result = document.getElementById('result');
     const input = document.getElementById('msg');
-    const promptsEl = document.getElementById('prompts');
     const historyList = document.getElementById('historyList');
 
-    // ----- Quick prompts -----
-    const QUICK_PROMPTS = [
-      "show all rows",
-      "show top 10 rows",
-      "count all rows",
-      "average WasteCollected overall",
-      "average WasteCollected per city",
-      "total WasteCollected per city",
-      "total RecycledWaste per city",
-      "rows for Year = 2024",
-      "top 5 cities by RecycledWaste in 2024",
-      "which city recycled the most in 2024",
-      "year-over-year WasteCollected per city",
-      "recycling rate (RecycledWaste / WasteCollected) per city",
-      "explain the rows",
-      "summarize that",
-      "compare cities by recycling rate"
-    ];
-    if (promptsEl) {
-      QUICK_PROMPTS.forEach((text, i) => {
-        const chip = document.createElement('div');
-        chip.className = 'chip';
-        chip.textContent = text;
-        chip.title = text;
-        chip.style.transitionDelay = `${i * 20}ms`;
-        chip.onclick = () => { input.value = text; send(); };
-        promptsEl.appendChild(chip);
-      });
-    }
 
     // ----- Chat helpers -----
     function appendUser(text) {
@@ -506,9 +457,6 @@
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
     input.addEventListener('input', toggleSendIcon);
 
-    // Animate chips in
-    function animateChips(){ const panel = document.querySelector('.prompts'); if(!panel) return; requestAnimationFrame(() => { panel.querySelectorAll('.chip').forEach((el, idx) => { setTimeout(() => el.classList.add('chip-show'), idx * 18); }); }); }
-    animateChips();
 
     // Hide title and subtitle on scroll
     function handleScroll() {
