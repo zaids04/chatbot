@@ -102,7 +102,7 @@
     .topbar .title { text-align:center; flex: 1; }
     .topbar .actions { display:flex; gap:8px; }
     .main-title, .main-subtitle { position: static; opacity: 1; text-align: center; }
-.chat-scroll { padding: 24px 0 24px 0; } /* reduce the huge top padding */
+    .chat-scroll { padding: 24px 0 24px 0; }
 
     /* Main title with faster fade-in animation */
     .main-title {
@@ -137,27 +137,13 @@
     }
 
     @keyframes simpleTitleAnimation {
-      from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
+      from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
-
     @keyframes simpleSubtitleAnimation {
-      from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
+      from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
-
 
     .chat-scroll {
       flex: 1 1 auto;
@@ -167,9 +153,7 @@
     }
 
     /* Chat scroll when composer is at bottom */
-    .composer.moved-to-bottom ~ .chat-scroll {
-      padding: 24px 0;
-    }
+    .composer.moved-to-bottom ~ .chat-scroll { padding: 24px 0; }
     .chat-inner {
       width: 100%;
       max-width: 980px;
@@ -178,7 +162,6 @@
     }
 
     /* Quick prompts */
-    /* Right-aligned suggestions (bubbly buttons) */
     .suggestions-inline { display:flex; justify-content:flex-end; margin: 12px 0; }
     .prompts{ display:flex; flex-wrap:wrap; gap:8px; margin:0; padding: 0; max-width: 60%; justify-content:flex-end; }
     .chip{
@@ -204,12 +187,7 @@
     .msg.bot .bubble { background: #0b1220; color: #e5e7eb; }
 
     /* Result blocks under bubbles */
-    .sql, .analysis{
-      background: var(--bg-elev-2);
-      border:1px solid #e5e7eb;
-      border-radius: var(--radius-sm);
-      padding:12px; margin-top:12px;
-    }
+    .sql, .analysis{ background: var(--bg-elev-2); border:1px solid #e5e7eb; border-radius: var(--radius-sm); padding:12px; margin-top:12px; }
     .sql{ font-family:'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; font-size:13px; line-height:1.5; }
     .analysis{ background:#eefbf2; border-color:#c7ebd3; }
     .error{ color: var(--danger); font-weight:600; }
@@ -220,109 +198,39 @@
     th{ background: #0b1220; font-weight:600; color: var(--text-strong); }
 
     /* Composer */
-    .composer {
-      border-top: none;
-      background: transparent;
-      position: fixed;
-      top: 380px;
-      left: 59%;
-      transform: translateX(-50%);
-      z-index: 1000;
-      opacity: 1;
-      transition: top 0.5s ease-in-out, position 0.5s ease-in-out, width 0.5s ease-in-out, margin-left 0.5s ease-in-out, background 0.5s ease-in-out, border-top 0.5s ease-in-out;
-    }
+    .composer { border-top: none; background: transparent; position: fixed; top: 380px; left: 59%; transform: translateX(-50%); z-index: 1000; opacity: 1; transition: top 0.5s ease-in-out, position 0.5s ease-in-out, width 0.5s ease-in-out, margin-left 0.5s ease-in-out, background 0.5s ease-in-out, border-top 0.5s ease-in-out; }
 
-    /* Composer when moved to bottom */
-    .composer.moved-to-bottom {
-      position: sticky;
-      bottom: 0;
-      top: auto;
-      left: auto;
-      transform: none;
-      width: 1300px;
-      background: var(--bg-elev-1);
-      border-top: 1px solid rgba(255,255,255,.06);
-      box-sizing: border-box;
-    }
-    .composer-inner {
-      max-width: none;
-      width: 700px;
-      margin: 0 auto;
-      padding: 12px 20px;
-      display:flex; gap: 10px; align-items: center;
-      justify-content: center;
-    }
+    .composer.moved-to-bottom { position: sticky; bottom: 0; top: auto; left: auto; transform: none; width: 1300px; background: var(--bg-elev-1); border-top: 1px solid rgba(255,255,255,.06); box-sizing: border-box; }
 
-    .input-container {
-      position: relative;
-      flex: 1;
-      display: flex;
-      align-items: center;
-    }
+    .composer-inner { max-width: none; width: 700px; margin: 0 auto; padding: 12px 20px; display:flex; gap: 10px; align-items: center; justify-content: center; }
+    .composer.moved-to-bottom .composer-inner { max-width: 820px; background: var(--bg-elev-1); }
 
-    /* Composer inner when at bottom */
-    .composer.moved-to-bottom .composer-inner {
-      max-width: 820px;
-      
-      background: var(--bg-elev-1);
-    }
-    input[type="text"]{
-      flex: 1;
-      width: 100%;
-      max-width: none;
-      padding: 14px 50px 14px 16px; /* Add right padding for icon */
-      border: 2px solid rgba(255,255,255,0.8);
-      border-radius: 999px;
-      font-size: 14px;
-      transition: border-color .15s ease, box-shadow .15s ease;
-      background: #0b1220;
-      color: var(--text-on-dark);
-    }
+    .input-container { position: relative; flex: 1; display: flex; align-items: center; }
 
-    .send-icon {
-      position: absolute;
-      right: 16px;
-      color: #ffffff;
-      cursor: pointer;
-      font-size: 24px;
-      transition: color 0.2s ease, transform 0.2s ease;
-    }
+    input[type="text"]{ flex: 1; width: 100%; max-width: none; padding: 14px 50px 14px 16px; border: 2px solid rgba(255,255,255,0.8); border-radius: 999px; font-size: 14px; transition: border-color .15s ease, box-shadow .15s ease; background: #0b1220; color: var(--text-on-dark); }
 
-    .send-icon:hover {
-      color: #94a3b8;
-      transform: scale(1.1);
-    }
+    .send-icon { position: absolute; right: 16px; color: #ffffff; cursor: pointer; font-size: 24px; transition: color 0.2s ease, transform 0.2s ease; }
+    .send-icon:hover { color: #94a3b8; transform: scale(1.1); }
 
-    /* Input when composer is at bottom */
-    .composer.moved-to-bottom input[type="text"] {
-      width: auto;
-      border: 1px solid rgba(255,255,255,.06);
-    }
-    input[type="text"]:focus{
-      outline: none; border-color: rgba(255,255,255,1);
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
-    }
-    button{
-      padding: 12px 16px; border: 1px solid rgba(255,255,255,.06); border-radius: 999px;
-      background: #111827; color:#fff; cursor:pointer;
-      font-weight: 600; font-size: 14px; transition: transform .2s ease, box-shadow .2s ease;
-    }
+    .composer.moved-to-bottom input[type="text"] { width: auto; border: 1px solid rgba(255,255,255,.06); }
+    input[type="text"]:focus{ outline: none; border-color: rgba(255,255,255,1); box-shadow: 0 0 0 3px rgba(255,255,255,0.3); }
+
+    button{ padding: 12px 16px; border: 1px solid rgba(255,255,255,.06); border-radius: 999px; background: #111827; color:#fff; cursor:pointer; font-weight: 600; font-size: 14px; transition: transform .2s ease, box-shadow .2s ease; }
     button:hover{ transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.45); }
     .btn-secondary{ background: #1f2937; color:#e5e7eb; border-color: transparent; }
     .btn-danger{ background: #7f1d1d; color:#fff; border-color: transparent; }
     .btn-ghost{ background: var(--bg-elev-1); color: var(--text-body); }
 
-    /* Scrollbar */
     ::-webkit-scrollbar{ width:8px; height:8px; }
     ::-webkit-scrollbar-track{ background: #0b1220; }
     ::-webkit-scrollbar-thumb{ background: #374151; border-radius:4px; }
     ::-webkit-scrollbar-thumb:hover{ background: #4b5563; }
 
-    /* Responsive */
-    @media (max-width: 1024px){
-      .sidebar{ width: 260px; }
-      .main{ margin-left: 260px; }
-    }
+    @media (max-width: 1024px){ .sidebar{ width: 260px; } .main{ margin-left: 260px; } }
+
+    /* Optional: tiny spinner for send icon when loading */
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .spin { animation: spin 1s linear infinite; }
   </style>
 </head>
 <body>
@@ -345,18 +253,18 @@
       <div class="topbar">
         <div style="width:28px;"></div>
         <div class="title"></div>
-        <div class="actions">
-        </div>
+        <div class="actions"></div>
       </div>
-
-      <!-- Main title with fancy fade-in animation -->
-     
-      
 
       <div class="chat-scroll">
         <div class="chat-inner">
           <div class="main-title">Waste Management Chatbot</div>
           <div class="main-subtitle">Ask about the Waste Database</div>
+
+          <!-- Quick prompts row (optional) -->
+          <div class="suggestions-inline">
+            <div id="prompts" class="prompts"></div>
+          </div>
 
           <div id="log" aria-live="polite"></div>
           <div id="result"></div>
@@ -380,8 +288,6 @@
     const input = document.getElementById('msg');
     const promptsEl = document.getElementById('prompts');
     const historyList = document.getElementById('historyList');
-    const sidebar = document.getElementById('sidebar');
-    // no toggle (sidebar fixed)
 
     // ----- Quick prompts -----
     const QUICK_PROMPTS = [
@@ -397,7 +303,6 @@
       "which city recycled the most in 2024",
       "year-over-year WasteCollected per city",
       "recycling rate (RecycledWaste / WasteCollected) per city",
-      // follow-ups / analysis
       "explain the rows",
       "summarize that",
       "compare cities by recycling rate"
@@ -431,47 +336,57 @@
       log.insertAdjacentHTML('beforeend', html);
       log.parentElement.scrollTop = log.parentElement.scrollHeight;
     }
-    function escapeHtml(s) {
-      return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    }
+    function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
 
     function setLoading(on){
-      const btn = document.getElementById('sendBtn');
-      btn.disabled = on;
-      btn.textContent = on ? "Working..." : "Send";
+      const icon = document.getElementById('sendIcon');
+      if (!icon) return;
+      icon.style.pointerEvents = on ? 'none' : 'auto';
+      icon.style.opacity = on ? '0.6' : '1';
+      icon.classList.toggle('spin', on);
     }
+
+    // Change this if your API is on another origin
+    const API_BASE = '';
 
     async function send() {
       const message = input.value.trim();
       if (!message) return;
-      input.value = "";
-      
+      input.value = '';
+
       // Hide send icon after sending
-      sendIcon.style.display = 'none';
-      
+      const sendIcon = document.getElementById('sendIcon');
+      if (sendIcon) sendIcon.style.display = 'none';
+
       // Move composer to bottom when sending message
       const composer = document.querySelector('.composer');
       composer.classList.add('moved-to-bottom');
-      
+
       appendUser(message);
-      result.innerHTML = "";
+      result.innerHTML = '';
       setLoading(true);
 
       try {
-        const res = await fetch("/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const url = `${API_BASE}/chat`.replace(/^(https?:\/\/)?$/, '/chat');
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message })
         });
-        const data = await res.json();
+
+        if (!res.ok) {
+          const txt = await res.text().catch(() => '');
+          throw new Error(`HTTP ${res.status} ${res.statusText} — ${txt.slice(0,200)}`);
+        }
+
+        let data;
+        try { data = await res.json(); }
+        catch { throw new Error('Response was not valid JSON'); }
 
         if (!data.ok) {
-          appendBot(`<span class="error">${escapeHtml(data.message || "Error")}</span>`);
+          appendBot(`<span class="error">${escapeHtml(data.message || 'Error')}</span>`);
           if (data.sql) result.innerHTML = `<div class="sql"><b>SQL:</b> ${escapeHtml(data.sql)}</div>`;
-          saveHistory({
-            ok:false, user: message, ts: data.ts || new Date().toISOString(),
-            mode: data.mode || "error", sql: data.sql || "", rows: [], columns: [], analysis: data.message || "Error"
-          });
+          saveHistory({ ok:false, user: message, ts: data.ts || new Date().toISOString(), mode: data.mode || 'error', sql: data.sql || '', rows: [], columns: [], analysis: data.message || 'Error' });
           renderHistory();
           setLoading(false);
           return;
@@ -479,37 +394,22 @@
 
         // Combine analysis + SQL + (optional) table into one bot bubble
         const parts = [];
-        if (data.analysis) {
-          parts.push(`<div><b>Analysis:</b> ${escapeHtml(data.analysis)}</div>`);
-        }
-        if (data.sql) {
-          parts.push(`<div style="margin-top:8px;"><b>SQL:</b> ${escapeHtml(data.sql)}</div>`);
-        }
+        if (data.analysis) parts.push(`<div><b>Analysis:</b> ${escapeHtml(data.analysis)}</div>`);
+        if (data.sql) parts.push(`<div style="margin-top:8px;"><b>SQL:</b> ${escapeHtml(data.sql)}</div>`);
         if (data.rows && data.rows.length) {
-          const cols = data.columns || Object.keys(data.rows[0]);
-          const header = `<tr>` + cols.map(c => `<th>${escapeHtml(c)}</th>`).join("") + `</tr>`;
-          const body = data.rows.slice(0, 10).map(r =>
-            `<tr>` + cols.map(c => `<td>${escapeHtml(String(r[c] ?? ""))}</td>`).join("") + `</tr>`
-          ).join("");
+          const cols = (data.columns && data.columns.length) ? data.columns : Object.keys(data.rows[0]);
+          const header = `<tr>` + cols.map(c => `<th>${escapeHtml(c)}</th>`).join('') + `</tr>`;
+          const body = data.rows.slice(0, 10).map(r => `<tr>` + cols.map(c => `<td>${escapeHtml(String(r[c] ?? ''))}</td>`).join('') + `</tr>`).join('');
           parts.push(`<div style="margin-top:10px;"><table><thead>${header}</thead><tbody>${body}</tbody></table></div>`);
         }
-        if (parts.length) appendBot(parts.join(""));
+        if (parts.length) appendBot(parts.join(''));
 
         // Save history with analysis
-        addEntryToCurrent({
-          ok:true,
-          user: message,
-          ts: data.ts || new Date().toISOString(),
-          mode: data.mode || "",
-          sql: data.sql || "",
-          rows: data.rows || [],
-          columns: data.columns || [],
-          analysis: data.analysis || ""
-        });
+        addEntryToCurrent({ ok:true, user: message, ts: data.ts || new Date().toISOString(), mode: data.mode || '', sql: data.sql || '', rows: data.rows || [], columns: data.columns || [], analysis: data.analysis || '' });
         renderHistory();
 
       } catch (e) {
-        appendBot(`<span class="error">Failed to contact server.</span>`);
+        appendBot(`<span class="error">${escapeHtml(e.message || 'Failed to contact server.')}</span>`);
         console.error(e);
       } finally {
         setLoading(false);
@@ -517,19 +417,16 @@
     }
 
     // ----- History (localStorage) -----
-    const KEY = "wastechat_threads_v1";
-    const CURRENT_ID_KEY = "wastechat_current_thread_id";
+    const KEY = 'wastechat_threads_v1';
+    const CURRENT_ID_KEY = 'wastechat_current_thread_id';
 
-    function loadThreads(){
-      try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
-      catch { return []; }
-    }
+    function loadThreads(){ try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } }
     function saveThreads(threads){ localStorage.setItem(KEY, JSON.stringify(threads)); }
     function getCurrentThreadId(){ return localStorage.getItem(CURRENT_ID_KEY); }
     function setCurrentThreadId(id){ localStorage.setItem(CURRENT_ID_KEY, id); }
     function createThread(){
       const id = Date.now().toString();
-      const thread = { id, title: "", ts: new Date().toISOString(), entries: [] };
+      const thread = { id, title: '', ts: new Date().toISOString(), entries: [] };
       const threads = loadThreads();
       threads.unshift(thread);
       saveThreads(threads.slice(0,50));
@@ -542,34 +439,22 @@
       if (!id) { id = createThread(); threads = loadThreads(); }
       const idx = threads.findIndex(t => t.id === id);
       if (idx === -1) { id = createThread(); threads = loadThreads(); }
-      // set title from first user prompt if empty
-      if (!threads[idx].title && entry.user) {
-        threads[idx].title = entry.user.slice(0,60);
-      }
+      if (!threads[idx].title && entry.user) { threads[idx].title = entry.user.slice(0,60); }
       threads[idx].entries.unshift(entry);
       saveThreads(threads);
     }
-    function clearHistory(){
-      localStorage.removeItem(KEY);
-      localStorage.removeItem(CURRENT_ID_KEY);
-      renderHistory();
-    }
+    function clearHistory(){ localStorage.removeItem(KEY); localStorage.removeItem(CURRENT_ID_KEY); renderHistory(); }
     function newChat(){
       createThread();
-      // clear current conversation only
-      log.innerHTML = "";
-      result.innerHTML = "";
-      input.value = "";
+      log.innerHTML = '';
+      result.innerHTML = '';
+      input.value = '';
       log.parentElement.scrollTop = 0;
-      
-      // Reset composer to original position under title
       const composer = document.querySelector('.composer');
       composer.classList.remove('moved-to-bottom');
-      
       renderHistory();
     }
 
-    // expose for inline onclick
     function rerunIdx(i){ const e=(window.wasteHist||[])[i]; if(e){ input.value=e.user; send(); } }
     function previewIdx(i){ const e=(window.wasteHist||[])[i]; if(e) preview(e); }
     function loadThread(id){
@@ -582,14 +467,14 @@
     }
 
     function preview(entry){
-      result.innerHTML = "";
+      result.innerHTML = '';
       const parts = [];
       if (entry.analysis) parts.push(`<div><b>Analysis:</b> ${escapeHtml(entry.analysis)}</div>`);
       if (entry.sql) parts.push(`<div style=\"margin-top:8px;\"><b>SQL:</b> ${escapeHtml(entry.sql)}</div>`);
       if (entry.ok && entry.rows && entry.rows.length){
         const cols = entry.columns && entry.columns.length ? entry.columns : Object.keys(entry.rows[0]);
         const header = `<tr>` + cols.map(c => `<th>${escapeHtml(c)}</th>`).join("") + `</tr>`;
-        const body = entry.rows.slice(0,10).map(r => `<tr>` + cols.map(c => `<td>${escapeHtml(String(r[c] ?? ""))}</td>`).join("") + `</tr>`).join("");
+        const body = entry.rows.slice(0,10).map(r => `<tr>` + cols.map(c => `<td>${escapeHtml(String(r[c] ?? ''))}</td>`).join("") + `</tr>`).join("");
         parts.push(`<div style=\"margin-top:10px;\"><table><thead>${header}</thead><tbody>${body}</tbody></table></div>`);
       }
       if (parts.length) appendBot(parts.join(""));
@@ -597,7 +482,7 @@
 
     function renderHistory(){
       const threads = loadThreads();
-      historyList.innerHTML = "";
+      historyList.innerHTML = '';
       if(!threads.length){
         historyList.innerHTML = `<div class="muted">No chats yet.</div>`;
         window.wasteHist = [];
@@ -606,8 +491,8 @@
       window.wasteHist = threads.flatMap(t => t.entries);
       threads.forEach((t, idx) => {
         const title = t.title && t.title.trim() ? t.title : `Chat ${threads.length - idx}`;
-        const div = document.createElement("div");
-        div.className = "history-item";
+        const div = document.createElement('div');
+        div.className = 'history-item';
         div.style.cursor = 'pointer';
         div.innerHTML = `<div style="font-weight:600;">${escapeHtml(title)}</div>`;
         div.onclick = () => loadThread(t.id);
@@ -617,61 +502,29 @@
 
     // Enter key support and show/hide send icon
     const sendIcon = document.getElementById('sendIcon');
-    
-    function toggleSendIcon() {
-      if (input.value.trim().length > 0) {
-        sendIcon.style.display = 'block';
-      } else {
-        sendIcon.style.display = 'none';
-      }
-    }
-    
-    input.addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
-    input.addEventListener("input", toggleSendIcon);
+    function toggleSendIcon() { if (input.value.trim().length > 0) { sendIcon.style.display = 'block'; } else { sendIcon.style.display = 'none'; } }
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+    input.addEventListener('input', toggleSendIcon);
 
     // Animate chips in
-    function animateChips(){
-      const panel = document.querySelector('.prompts');
-      if(!panel) return;
-      requestAnimationFrame(() => {
-        panel.querySelectorAll('.chip').forEach((el, idx) => {
-          setTimeout(() => el.classList.add('chip-show'), idx * 18);
-        });
-      });
-    }
+    function animateChips(){ const panel = document.querySelector('.prompts'); if(!panel) return; requestAnimationFrame(() => { panel.querySelectorAll('.chip').forEach((el, idx) => { setTimeout(() => el.classList.add('chip-show'), idx * 18); }); }); }
     animateChips();
 
     // Hide title and subtitle on scroll
     function handleScroll() {
       const title = document.querySelector('.main-title');
       const subtitle = document.querySelector('.main-subtitle');
-      
-      // Check scroll position from multiple sources
       const windowScroll = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
       const chatScroll = document.querySelector('.chat-scroll');
       const chatScrollTop = chatScroll ? chatScroll.scrollTop : 0;
-      
-      // Use the greater of the two scroll values
       const scrollTop = Math.max(windowScroll, chatScrollTop);
-      
-      if (scrollTop > 50) { // Hide after scrolling 50px down
-        title.style.display = 'none';
-        subtitle.style.display = 'none';
-      } else { // Show when near top
-        title.style.display = 'block';
-        subtitle.style.display = 'block';
-      }
+      if (scrollTop > 50) { title.style.display = 'none'; subtitle.style.display = 'none'; }
+      else { title.style.display = 'block'; subtitle.style.display = 'block'; }
     }
-
-    // Add scroll listener to multiple elements
     window.addEventListener('scroll', handleScroll);
     document.addEventListener('scroll', handleScroll);
-    
-    // Listen to the chat-scroll container specifically
     const chatScrollElement = document.querySelector('.chat-scroll');
-    if (chatScrollElement) {
-      chatScrollElement.addEventListener('scroll', handleScroll);
-    }
+    if (chatScrollElement) chatScrollElement.addEventListener('scroll', handleScroll);
 
     // Init
     renderHistory();
