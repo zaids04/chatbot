@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Waste Management Chatbot</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     :root {
       /* Dark theme inspired by AI Studio */
@@ -100,10 +101,73 @@
     }
     .topbar .title { text-align:center; flex: 1; }
     .topbar .actions { display:flex; gap:8px; }
+    .main-title, .main-subtitle { position: static; opacity: 1; text-align: center; }
+.chat-scroll { padding: 24px 0 24px 0; } /* reduce the huge top padding */
+
+    /* Main title with faster fade-in animation */
+    .main-title {
+      position:fixed;
+      top: 180px;
+      left: 59%;
+      transform: translateX(-50%);
+      font-size: 36px;
+      font-weight: 800;
+      color: #ffffff;
+      text-align: center;
+      z-index: 1000;
+      opacity: 0;
+      animation: simpleTitleAnimation 1s ease-out 0.3s forwards;
+      letter-spacing: -0.02em;
+    }
+
+    /* Subtitle styling */
+    .main-subtitle {
+      position: fixed;
+      top: 240px;
+      left: 59%;
+      transform: translateX(-50%);
+      font-size: 16px;
+      font-weight: 500;
+      color: #ffffff;
+      text-align: center;
+      z-index: 1000;
+      opacity: 0;
+      animation: simpleSubtitleAnimation 1s ease-out 0.8s forwards;
+      letter-spacing: 0.5px;
+    }
+
+    @keyframes simpleTitleAnimation {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    @keyframes simpleSubtitleAnimation {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
 
     .chat-scroll {
       flex: 1 1 auto;
       overflow: auto;
+      padding: 380px 0 24px 0; /* Add top padding to account for fixed search bar */
+      transition: padding 0.5s ease-in-out;
+    }
+
+    /* Chat scroll when composer is at bottom */
+    .composer.moved-to-bottom ~ .chat-scroll {
       padding: 24px 0;
     }
     .chat-inner {
@@ -157,30 +221,86 @@
 
     /* Composer */
     .composer {
-      border-top: 1px solid rgba(255,255,255,.06);
-      background: var(--bg-elev-1);
+      border-top: none;
+      background: transparent;
+      position: fixed;
+      top: 380px;
+      left: 59%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      opacity: 1;
+      transition: top 0.5s ease-in-out, position 0.5s ease-in-out, width 0.5s ease-in-out, margin-left 0.5s ease-in-out, background 0.5s ease-in-out, border-top 0.5s ease-in-out;
+    }
+
+    /* Composer when moved to bottom */
+    .composer.moved-to-bottom {
       position: sticky;
       bottom: 0;
+      top: auto;
+      left: auto;
+      transform: none;
+      width: 1300px;
+      background: var(--bg-elev-1);
+      border-top: 1px solid rgba(255,255,255,.06);
+      box-sizing: border-box;
     }
     .composer-inner {
-      max-width: 820px;
+      max-width: none;
+      width: 700px;
       margin: 0 auto;
       padding: 12px 20px;
       display:flex; gap: 10px; align-items: center;
+      justify-content: center;
+    }
+
+    .input-container {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Composer inner when at bottom */
+    .composer.moved-to-bottom .composer-inner {
+      max-width: 820px;
+      
+      background: var(--bg-elev-1);
     }
     input[type="text"]{
       flex: 1;
-      padding: 14px 16px;
-      border: 1px solid rgba(255,255,255,.06);
+      width: 100%;
+      max-width: none;
+      padding: 14px 50px 14px 16px; /* Add right padding for icon */
+      border: 2px solid rgba(255,255,255,0.8);
       border-radius: 999px;
       font-size: 14px;
       transition: border-color .15s ease, box-shadow .15s ease;
       background: #0b1220;
       color: var(--text-on-dark);
     }
+
+    .send-icon {
+      position: absolute;
+      right: 16px;
+      color: #ffffff;
+      cursor: pointer;
+      font-size: 24px;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .send-icon:hover {
+      color: #94a3b8;
+      transform: scale(1.1);
+    }
+
+    /* Input when composer is at bottom */
+    .composer.moved-to-bottom input[type="text"] {
+      width: auto;
+      border: 1px solid rgba(255,255,255,.06);
+    }
     input[type="text"]:focus{
-      outline: none; border-color: var(--accent-strong);
-      box-shadow: 0 0 0 3px rgba(36,99,235,.25);
+      outline: none; border-color: rgba(255,255,255,1);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
     }
     button{
       padding: 12px 16px; border: 1px solid rgba(255,255,255,.06); border-radius: 999px;
@@ -224,15 +344,19 @@
     <div class="main">
       <div class="topbar">
         <div style="width:28px;"></div>
-        <div class="title">Waste Management Chatbot</div>
+        <div class="title"></div>
         <div class="actions">
-          <button class="btn-ghost" onclick="newChat()">New Chat</button>
         </div>
       </div>
 
+      <!-- Main title with fancy fade-in animation -->
+     
+      
+
       <div class="chat-scroll">
         <div class="chat-inner">
-          
+          <div class="main-title">Waste Management Chatbot</div>
+          <div class="main-subtitle">Ask about the Waste Database</div>
 
           <div id="log" aria-live="polite"></div>
           <div id="result"></div>
@@ -241,8 +365,10 @@
 
       <div class="composer">
         <div class="composer-inner">
-          <input id="msg" type="text" placeholder="Ask about WasteData (e.g., 'compare recycling rates', 'show all rows', 'explain the rows')" />
-          <button id="sendBtn" onclick="send()">Send</button>
+          <div class="input-container">
+            <input id="msg" type="text" placeholder="e.g., 'compare recycling rates', 'show all rows', 'explain the rows'" />
+            <i class="material-icons send-icon" id="sendIcon" onclick="send()" style="display: none;">send</i>
+          </div>
         </div>
       </div>
     </div>
@@ -319,6 +445,14 @@
       const message = input.value.trim();
       if (!message) return;
       input.value = "";
+      
+      // Hide send icon after sending
+      sendIcon.style.display = 'none';
+      
+      // Move composer to bottom when sending message
+      const composer = document.querySelector('.composer');
+      composer.classList.add('moved-to-bottom');
+      
       appendUser(message);
       result.innerHTML = "";
       setLoading(true);
@@ -427,6 +561,11 @@
       result.innerHTML = "";
       input.value = "";
       log.parentElement.scrollTop = 0;
+      
+      // Reset composer to original position under title
+      const composer = document.querySelector('.composer');
+      composer.classList.remove('moved-to-bottom');
+      
       renderHistory();
     }
 
@@ -476,8 +615,19 @@
       });
     }
 
-    // Enter key support
+    // Enter key support and show/hide send icon
+    const sendIcon = document.getElementById('sendIcon');
+    
+    function toggleSendIcon() {
+      if (input.value.trim().length > 0) {
+        sendIcon.style.display = 'block';
+      } else {
+        sendIcon.style.display = 'none';
+      }
+    }
+    
     input.addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
+    input.addEventListener("input", toggleSendIcon);
 
     // Animate chips in
     function animateChips(){
@@ -490,6 +640,38 @@
       });
     }
     animateChips();
+
+    // Hide title and subtitle on scroll
+    function handleScroll() {
+      const title = document.querySelector('.main-title');
+      const subtitle = document.querySelector('.main-subtitle');
+      
+      // Check scroll position from multiple sources
+      const windowScroll = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      const chatScroll = document.querySelector('.chat-scroll');
+      const chatScrollTop = chatScroll ? chatScroll.scrollTop : 0;
+      
+      // Use the greater of the two scroll values
+      const scrollTop = Math.max(windowScroll, chatScrollTop);
+      
+      if (scrollTop > 50) { // Hide after scrolling 50px down
+        title.style.display = 'none';
+        subtitle.style.display = 'none';
+      } else { // Show when near top
+        title.style.display = 'block';
+        subtitle.style.display = 'block';
+      }
+    }
+
+    // Add scroll listener to multiple elements
+    window.addEventListener('scroll', handleScroll);
+    document.addEventListener('scroll', handleScroll);
+    
+    // Listen to the chat-scroll container specifically
+    const chatScrollElement = document.querySelector('.chat-scroll');
+    if (chatScrollElement) {
+      chatScrollElement.addEventListener('scroll', handleScroll);
+    }
 
     // Init
     renderHistory();
